@@ -41,11 +41,27 @@ namespace Service
 
             services.Configure<KafkaSettings>(Configuration.GetSection("KafkaSettings"));
 
-            // graphql
-            services
-                .AddGraphQLServer()
-                .AddQueryType<Query>()
-                .AddMutationType<Mutation>();
+            Console.WriteLine("Please insert first \n Kafka or Basic : ");
+            var type = Console.ReadLine();
+
+            if (type == "kafka")
+            {
+                // graphql
+                services
+                    .AddGraphQLServer()
+                    .AddQueryType<QueryKafka>()
+                    .AddMutationType<MutationKafka>();
+            }
+            else
+            {
+                // graphql
+                services
+                    .AddGraphQLServer()
+                    .AddQueryType<Query>()
+                    .AddMutationType<Mutation>();
+            }
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

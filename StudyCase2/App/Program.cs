@@ -33,7 +33,7 @@ namespace App
             using (var consumer = new ConsumerBuilder<string, string>(Serverconfig).Build())
             {
                 Console.WriteLine("Connected");
-                var topics = new string[] { "product", "cart" };
+                var topics = new string[] { "Tweet", "Comment", "Profile" };
                 consumer.Subscribe(topics);
 
                 Console.WriteLine("Waiting messages....");

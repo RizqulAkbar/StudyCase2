@@ -19,8 +19,9 @@ namespace KafkaCreateTopics
             };
             var topics = new List<String>();
             topics.Add("logging");
-            topics.Add("product");
-            topics.Add("cart");
+            topics.Add("tweet");
+            topics.Add("comment");
+            topics.Add("profile");
             foreach (var topic in topics)
             {
                 using (var adminClient = new AdminClientBuilder(config).Build())
