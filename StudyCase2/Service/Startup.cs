@@ -41,7 +41,7 @@ namespace Service
 
             services.Configure<KafkaSettings>(Configuration.GetSection("KafkaSettings"));
 
-            Console.WriteLine("Please insert first \n Kafka or Basic : ");
+            Console.WriteLine("Please insert first \nKafka or Basic : ");
             var type = Console.ReadLine();
 
             if (type == "kafka")
