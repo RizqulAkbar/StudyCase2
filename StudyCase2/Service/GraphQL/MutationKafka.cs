@@ -1,4 +1,5 @@
 ﻿using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -19,15 +20,39 @@ namespace Service.GraphQL
             TweetInput input,
             [Service] IOptions<KafkaSettings> kafkaSettings)
         {
-            var product = new Tweet
+            var tweet = new Tweet
             {
                 Username = input.Username,
                 Tweet1 = input.Tweet,
                 Created = DateTime.Now
             };
-            var key = "product-add-" + DateTime.Now.ToString();
-            var val = JObject.FromObject(product).ToString(Formatting.None);
-            var result = await KafkaHelper.SendMessage(kafkaSettings.Value, "product", key, val);
+            var key = "tweet-add-" + DateTime.Now.ToString();
+            var val = JObject.FromObject(tweet).ToString(Formatting.None);
+            var result = await KafkaHelper.SendMessage(kafkaSettings.Value, "tweet", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+
+            var ret = new TransactionStatus(result, "");
+            if (!result)
+                ret = new TransactionStatus(result, "Failed to submit data");
+
+
+            return await Task.FromResult(ret);
+        }
+        [Authorize]
+        public async Task<TransactionStatus> DeleteTweetByIdAsync(
+            int id,
+            [Service] IOptions<KafkaSettings> kafkaSettings,
+            [Service] TwittorContext context)
+        {
+            var tweet = context.Tweets.Where(o => o.TweetId == id).FirstOrDefault();
+            if (tweet != null)
+            {
+                context.Tweets.Remove(tweet);
+                await context.SaveChangesAsync();
+            }
+            var key = "tweet-delete-" + DateTime.Now.ToString();
+            var val = JObject.FromObject(tweet).ToString(Formatting.None);
+            var result = await KafkaHelper.SendMessage(kafkaSettings.Value, "tweet", key, val);
             await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
             var ret = new TransactionStatus(result, "");
@@ -59,10 +84,34 @@ namespace Service.GraphQL
             return await Task.FromResult(ret);
 
         }
+        [Authorize]
+        public async Task<TransactionStatus> DeleteCommentByIdAsync(
+           int id,
+           [Service] IOptions<KafkaSettings> kafkaSettings,
+           [Service] TwittorContext context)
+        {
+            var comment = context.Comments.Where(o => o.CommentId == id).FirstOrDefault();
+            if (comment != null)
+            {
+                context.Comments.Remove(comment);
+                await context.SaveChangesAsync();
+            }
+            var key = "comment-delete-" + DateTime.Now.ToString();
+            var val = JObject.FromObject(comment).ToString(Formatting.None);
+            var result = await KafkaHelper.SendMessage(kafkaSettings.Value, "comment", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
-            //----------------------------------------
+            var ret = new TransactionStatus(result, "");
+            if (!result)
+                ret = new TransactionStatus(result, "Failed to submit data");
 
-            public async Task<ProfileData> RegisterUserAsync(
+
+            return await Task.FromResult(ret);
+        }
+
+        //User
+
+        public async Task<ProfileData> RegisterUserAsync(
             RegisterUser input,
             [Service] TwittorContext context)
             {
@@ -75,6 +124,8 @@ namespace Service.GraphQL
                 {
                     Email = input.Email,
                     Username = input.UserName,
+                    Firstname = input.Firstname,
+                    Lastname = input.Lastname,
                     Password = BCrypt.Net.BCrypt.HashPassword(input.Password)
                 };
 
@@ -83,7 +134,6 @@ namespace Service.GraphQL
 
                 return await Task.FromResult(new ProfileData
                 {
-                    Id = newUser.UserId,
                     Username = newUser.Username,
                     Email = newUser.Email,
                 });
@@ -120,6 +170,31 @@ namespace Service.GraphQL
                 }
 
                 return await Task.FromResult(new ProfileToken(null, null, Message: "Username or password was invalid"));
+            }
+
+            [Authorize]
+            public async Task<TransactionStatus> DeleteUserByUsernameAsync(
+               string username,
+               [Service] IOptions<KafkaSettings> kafkaSettings,
+               [Service] TwittorContext context)
+            {
+                var user = context.Profiles.Where(o => o.Username == username).FirstOrDefault();
+                if (user != null)
+                {
+                    context.Profiles.Remove(user);
+                    await context.SaveChangesAsync();
+                }
+                var key = "user-delete-" + DateTime.Now.ToString();
+                var val = JObject.FromObject(user).ToString(Formatting.None);
+                var result = await KafkaHelper.SendMessage(kafkaSettings.Value, "user", key, val);
+                await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+
+                var ret = new TransactionStatus(result, "");
+                if (!result)
+                    ret = new TransactionStatus(result, "Failed to submit data");
+
+
+                return await Task.FromResult(ret);
             }
 
     }

@@ -1,4 +1,5 @@
 ﻿using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Service.Models;
@@ -12,6 +13,7 @@ namespace Service.GraphQL
 {
     public class Mutation
     {
+        [Authorize]
         public async Task<TweetPayload> AddTweetAsync(
             TweetInput input,
             [Service] TwittorContext context)
@@ -28,12 +30,31 @@ namespace Service.GraphQL
 
             return new TweetPayload(tweet);
         }
+
+        [Authorize]
+        public async Task<TweetPayload> DeleteTweetByIdAsync(
+            int id,
+            [Service] TwittorContext context)
+        {
+            var tweet = context.Tweets.Where(o => o.TweetId == id).FirstOrDefault();
+            if (tweet != null)
+            {
+                context.Tweets.Remove(tweet);
+                await context.SaveChangesAsync();
+            }
+
+
+            return new TweetPayload(tweet);
+        }
+
+        [Authorize]
         public async Task<CommentPayload> AddCommentAsync(
             CommentInput input,
             [Service] TwittorContext context)
         {
             var comment = new Comment
             {
+                TweetId = input.TweetID,
                 Username = input.Username,
                 Comment1 = input.Comment,
                 Created = DateTime.Now
@@ -45,7 +66,23 @@ namespace Service.GraphQL
             return new CommentPayload(comment);
         }
 
-        //----------------------------------------
+        [Authorize]
+        public async Task<CommentPayload> DeleteCommentByIdAsync(
+            int id,
+            [Service] TwittorContext context)
+        {
+            var comment = context.Comments.Where(o => o.CommentId == id).FirstOrDefault();
+            if (comment != null)
+            {
+                context.Comments.Remove(comment);
+                await context.SaveChangesAsync();
+            }
+
+
+            return new CommentPayload(comment);
+        }
+
+        //Profile
 
         public async Task<ProfileData> RegisterUserAsync(
         RegisterUser input,
@@ -60,6 +97,8 @@ namespace Service.GraphQL
             {
                 Email = input.Email,
                 Username = input.UserName,
+                Firstname = input.Firstname,
+                Lastname = input.Lastname,
                 Password = BCrypt.Net.BCrypt.HashPassword(input.Password)
             };
 
@@ -68,9 +107,10 @@ namespace Service.GraphQL
 
             return await Task.FromResult(new ProfileData
             {
-                Id = newUser.UserId,
                 Username = newUser.Username,
                 Email = newUser.Email,
+                Firstname = newUser.Firstname,
+                Lastname = newUser.Lastname
             });
         }
 
@@ -105,6 +145,22 @@ namespace Service.GraphQL
             }
 
             return await Task.FromResult(new ProfileToken(null, null, Message: "Username or password was invalid"));
+        }
+
+        [Authorize]
+        public async Task<Profile> DeleteUserByUsernameAsync(
+            string username,
+            [Service] TwittorContext context)
+        {
+            var user = context.Profiles.Where(o => o.Username == username).FirstOrDefault();
+            if (user != null)
+            {
+                context.Profiles.Remove(user);
+                await context.SaveChangesAsync();
+            }
+
+
+            return await Task.FromResult(user);
         }
 
     }

@@ -2,9 +2,8 @@
 {
     public record CommentInput
         (
-            int? CommentId,
-            int TweetId,
-            int? UserId,
+            int? CommentID,
+            int TweetID,
             string Username,
             string Comment
         );

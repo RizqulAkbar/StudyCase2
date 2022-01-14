@@ -38,6 +38,8 @@ namespace Service.Models
             {
                 entity.ToTable("Comment");
 
+                entity.Property(e => e.CommentId).HasColumnName("CommentID");
+
                 entity.Property(e => e.Comment1)
                     .IsRequired()
                     .HasMaxLength(500)
@@ -45,6 +47,8 @@ namespace Service.Models
                     .HasColumnName("Comment");
 
                 entity.Property(e => e.Created).HasColumnType("datetime");
+
+                entity.Property(e => e.TweetId).HasColumnName("TweetID");
 
                 entity.Property(e => e.Username)
                     .IsRequired()
@@ -57,20 +61,34 @@ namespace Service.Models
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Comment_Tweet");
 
-                entity.HasOne(d => d.User)
+                entity.HasOne(d => d.UsernameNavigation)
                     .WithMany(p => p.Comments)
-                    .HasForeignKey(d => d.UserId)
+                    .HasForeignKey(d => d.Username)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Comment_Profile");
             });
 
             modelBuilder.Entity<Profile>(entity =>
             {
-                entity.HasKey(e => e.UserId);
+                entity.HasKey(e => e.Username);
 
                 entity.ToTable("Profile");
 
+                entity.Property(e => e.Username)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Email)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Firstname)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Lastname)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
@@ -78,16 +96,13 @@ namespace Service.Models
                 entity.Property(e => e.Password)
                     .IsRequired()
                     .HasColumnType("ntext");
-
-                entity.Property(e => e.Username)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Tweet>(entity =>
             {
                 entity.ToTable("Tweet");
+
+                entity.Property(e => e.TweetId).HasColumnName("TweetID");
 
                 entity.Property(e => e.Created).HasColumnType("datetime");
 
@@ -102,9 +117,9 @@ namespace Service.Models
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.User)
+                entity.HasOne(d => d.UsernameNavigation)
                     .WithMany(p => p.Tweets)
-                    .HasForeignKey(d => d.UserId)
+                    .HasForeignKey(d => d.Username)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Tweet_Profile");
             });

@@ -9,12 +9,11 @@ namespace Service.Models
     {
         public int CommentId { get; set; }
         public int TweetId { get; set; }
-        public int UserId { get; set; }
         public string Username { get; set; }
         public string Comment1 { get; set; }
         public DateTime Created { get; set; }
 
         public virtual Tweet Tweet { get; set; }
-        public virtual Profile User { get; set; }
+        public virtual Profile UsernameNavigation { get; set; }
     }
 }

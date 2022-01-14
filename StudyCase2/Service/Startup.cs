@@ -14,6 +14,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HotChocolate.AspNetCore.Authorization;
+using HotChocolate.AspNetCore;
+using HotChocolate;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Service
 {
@@ -33,7 +39,6 @@ namespace Service
                  options.UseSqlServer(Configuration.GetConnectionString("MyDatabase"))
             );
 
-            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TwittorAPI", Version = "v1" });
@@ -61,7 +66,25 @@ namespace Service
                     .AddMutationType<Mutation>();
             }
 
-            
+            services.AddControllers();
+            // DI Dependency Injection
+            services.Configure<TokenSettings>(Configuration.GetSection("TokenSettings"));
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = Configuration.GetSection("TokenSettings").GetValue<string>("Issuer"),
+                        ValidateIssuer = true,
+                        ValidAudience = Configuration.GetSection("TokenSettings").GetValue<string>("Audience"),
+                        ValidateAudience = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSection("TokenSettings").GetValue<string>("Key"))),
+                        ValidateIssuerSigningKey = true
+                    };
+
+                });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,6 +101,7 @@ namespace Service
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

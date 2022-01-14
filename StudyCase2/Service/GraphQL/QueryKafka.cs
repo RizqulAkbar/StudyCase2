@@ -1,4 +1,5 @@
 ﻿using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,10 +21,10 @@ namespace Service.GraphQL
             var val = JObject.FromObject(new { Message = "GraphQL Query GetTweets" }).ToString(Formatting.None);
 
             await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
-            return context.Tweets;
+            return context.Tweets.Include("Comments");
         }
 
-        public IQueryable<Tweet> GetTweetById(
+        public async Task<IQueryable<Tweet>> GetTweetById(
             [Service] TwittorContext context,
             int id,
             [Service] IOptions<KafkaSettings> kafkaSettings)
@@ -31,14 +32,12 @@ namespace Service.GraphQL
             var key = "GetTweetById-" + DateTime.Now.ToString();
             var val = JObject.FromObject(new { Message = "GraphQL Query GetTweetById" }).ToString(Formatting.None);
 
-            _ = KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
-            var tweets = context.Tweets.Where(p => p.TweetId == id);
-
-            return tweets;
+            return context.Tweets.Include("Comments").Where(p => p.TweetId == id); ;
         }
 
-        public IQueryable<Tweet> GetTweetByUsername(
+        public async Task<IQueryable<Tweet>> GetTweetByUsername(
             [Service] TwittorContext context,
             string username,
             [Service] IOptions<KafkaSettings> kafkaSettings)
@@ -46,26 +45,24 @@ namespace Service.GraphQL
             var key = "GetTweetByUsername-" + DateTime.Now.ToString();
             var val = JObject.FromObject(new { Message = "GraphQL Query GetTweetByUsername" }).ToString(Formatting.None);
 
-            _ = KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
-            var tweets = context.Tweets.Where(p => p.Username == username);
-
-            return tweets;
+            return context.Tweets.Include("Comments").Where(p => p.Username == username); ;
         }
 
-        public IQueryable<Comment> GetComments(
+        public async Task<IQueryable<Comment>> GetComments(
             [Service] TwittorContext context,
             [Service] IOptions<KafkaSettings> kafkaSettings)
         {
             var key = "GetComments-" + DateTime.Now.ToString();
             var val = JObject.FromObject(new { Message = "GraphQL Query GetComments" }).ToString(Formatting.None);
 
-            _ = KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
-            return context.Comments;
+            return context.Comments.Include("Tweet");
         }
 
-        public IQueryable<Comment> GetCommentById(
+        public async Task<IQueryable<Comment>> GetCommentById(
             [Service] TwittorContext context,
             int id,
             [Service] IOptions<KafkaSettings> kafkaSettings)
@@ -73,14 +70,12 @@ namespace Service.GraphQL
             var key = "GetCommentById-" + DateTime.Now.ToString();
             var val = JObject.FromObject(new { Message = "GraphQL Query GetCommentById" }).ToString(Formatting.None);
 
-            _ = KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
-            var comments = context.Comments.Where(p => p.CommentId == id);
-
-            return comments;
+            return context.Comments.Include("Tweet").Where(p => p.CommentId == id); ;
         }
 
-        public IQueryable<Comment> GetCommentByUsername(
+        public async Task<IQueryable<Comment>> GetCommentByUsername(
             [Service] TwittorContext context,
             string username,
             [Service] IOptions<KafkaSettings> kafkaSettings)
@@ -88,11 +83,34 @@ namespace Service.GraphQL
             var key = "GetCommentByUsername-" + DateTime.Now.ToString();
             var val = JObject.FromObject(new { Message = "GraphQL Query GetCommentByUsername" }).ToString(Formatting.None);
 
-            _ = KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
-            var comments = context.Comments.Where(p => p.Username == username);
+            return context.Comments.Include("Tweet").Where(p => p.Username == username); ;
+        }
 
-            return comments;
+        public async Task<IQueryable<Profile>> GetProfiles(
+            [Service] TwittorContext context,
+            [Service] IOptions<KafkaSettings> kafkaSettings)
+        {
+            var key = "GetProfile-" + DateTime.Now.ToString();
+            var val = JObject.FromObject(new { Message = "GraphQL Query GetProfile" }).ToString(Formatting.None);
+
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+
+            return context.Profiles;
+        }
+
+        public async Task<IQueryable<Profile>> GetProfileByUsername(
+            [Service] TwittorContext context,
+            [Service] IOptions<KafkaSettings> kafkaSettings,
+            string username)
+        {
+            var key = "GetProfileByUsername-" + DateTime.Now.ToString();
+            var val = JObject.FromObject(new { Message = "GraphQL Query GetProfileByUsername" }).ToString(Formatting.None);
+
+            await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
+
+            return context.Profiles.Where(p => p.Username == username);
         }
     }
 }

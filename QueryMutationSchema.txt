@@ -1,0 +1,16 @@
+Query
+  tweets: [Tweet]
+  tweetById(id: Int!): [Tweet]
+  tweetByUsername(username: String): [Tweet]
+  tweetWithComment(id: Int!): [Tweet]
+  comments: [Comment]
+  commentById(id: Int!): [Comment]
+  commentByUsername(username: String): [Comment]
+  profiles: [Profile]
+  profileByUsername(username: String): [Profile]
+
+Mutation
+  addTweet(input: TweetInput): TweetPayload
+  addComment(input: CommentInput): CommentPayload
+  registerUser(input: RegisterUserInput): ProfileData
+  login(input: LoginUserInput): ProfileToken

@@ -2,7 +2,8 @@
 {
     public record ProfileInput
     (
-        int? UserId,
+        string Firstname,
+        string Lastname,
         string Username,
         string Email
     );
