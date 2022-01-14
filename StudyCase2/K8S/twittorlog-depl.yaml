@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twittorlog-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twittorlog
+  template:
+    metadata:
+      labels:
+        app: twittorlog
+    spec:
+      containers:
+      - name: twittorlog
+        image: rizhy/twittorlog:latest
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twittorlog-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: twittorlog
+  ports:
+  - name: twittorlog
+    protocol: TCP
+    port: 80
+    targetPort: 80

@@ -16,6 +16,7 @@ namespace Service.GraphQL
 {
     public class MutationKafka
     {
+        [Authorize]
         public async Task<TransactionStatus> AddTweetAsync(
             TweetInput input,
             [Service] IOptions<KafkaSettings> kafkaSettings)
@@ -38,6 +39,7 @@ namespace Service.GraphQL
 
             return await Task.FromResult(ret);
         }
+        
         [Authorize]
         public async Task<TransactionStatus> DeleteTweetByIdAsync(
             int id,
@@ -62,17 +64,20 @@ namespace Service.GraphQL
 
             return await Task.FromResult(ret);
         }
+        [Authorize]
         public async Task<TransactionStatus> AddCommentAsync(
             CommentInput input,
             [Service] IOptions<KafkaSettings> kafkaSettings)
         {
-            var cart = new Comment
+            var comment = new Comment
             {
+                TweetId = input.TweetID,
                 Username = input.Username,
-                Comment1 = input.Comment
+                Comment1 = input.Comment,
+                Created = DateTime.Now
             };
             var key = "comment-add-" + DateTime.Now.ToString();
-            var val = JObject.FromObject(cart).ToString(Formatting.None);
+            var val = JObject.FromObject(comment).ToString(Formatting.None);
             var result = await KafkaHelper.SendMessage(kafkaSettings.Value, "comment", key, val);
             await KafkaHelper.SendMessage(kafkaSettings.Value, "logging", key, val);
 
@@ -134,8 +139,10 @@ namespace Service.GraphQL
 
                 return await Task.FromResult(new ProfileData
                 {
-                    Username = newUser.Username,
-                    Email = newUser.Email,
+                     Username = newUser.Username,
+                     Email = newUser.Email,
+                     Firstname = newUser.Firstname,
+                     Lastname = newUser.Lastname
                 });
             }
 

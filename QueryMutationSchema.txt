@@ -2,7 +2,6 @@ Query
   tweets: [Tweet]
   tweetById(id: Int!): [Tweet]
   tweetByUsername(username: String): [Tweet]
-  tweetWithComment(id: Int!): [Tweet]
   comments: [Comment]
   commentById(id: Int!): [Comment]
   commentByUsername(username: String): [Comment]
@@ -10,7 +9,10 @@ Query
   profileByUsername(username: String): [Profile]
 
 Mutation
-  addTweet(input: TweetInput): TweetPayload
-  addComment(input: CommentInput): CommentPayload
+  addTweet(input: TweetInput): TransactionStatus
+  deleteTweetById(id: Int!): TransactionStatus
+  addComment(input: CommentInput): TransactionStatus
+  deleteCommentById(id: Int!): TransactionStatus
   registerUser(input: RegisterUserInput): ProfileData
   login(input: LoginUserInput): ProfileToken
+  deleteUserByUsername(username: String): TransactionStatus

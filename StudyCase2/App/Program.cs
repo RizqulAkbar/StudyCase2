@@ -1,11 +1,13 @@
 ﻿using App.Models;
-using Confluent.Kafka;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 namespace App
 {
     internal class Program
@@ -33,7 +35,7 @@ namespace App
             using (var consumer = new ConsumerBuilder<string, string>(Serverconfig).Build())
             {
                 Console.WriteLine("Connected");
-                var topics = new string[] { "Tweet", "Comment", "Profile" };
+                var topics = new string[] { "tweet", "comment", "profile" };
                 consumer.Subscribe(topics);
 
                 Console.WriteLine("Waiting messages....");

@@ -13,12 +13,11 @@ namespace App.Models
         }
 
         public int TweetId { get; set; }
-        public int UserId { get; set; }
         public string Username { get; set; }
         public string Tweet1 { get; set; }
         public DateTime Created { get; set; }
 
-        public virtual Profile User { get; set; }
+        public virtual Profile UsernameNavigation { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
     }
 }

@@ -46,16 +46,17 @@ namespace Service
 
             services.Configure<KafkaSettings>(Configuration.GetSection("KafkaSettings"));
 
-            Console.WriteLine("Please insert first \nKafka or Basic : ");
+            Console.Write("Please insert first \nKafka or Basic : ");
             var type = Console.ReadLine();
 
-            if (type == "kafka")
+            if (type == "kafka" || type == "Kafka")
             {
                 // graphql
                 services
                     .AddGraphQLServer()
                     .AddQueryType<QueryKafka>()
-                    .AddMutationType<MutationKafka>();
+                    .AddMutationType<MutationKafka>()
+                    .AddAuthorization();
             }
             else
             {
@@ -63,7 +64,8 @@ namespace Service
                 services
                     .AddGraphQLServer()
                     .AddQueryType<Query>()
-                    .AddMutationType<Mutation>();
+                    .AddMutationType<Mutation>()
+                    .AddAuthorization();
             }
 
             services.AddControllers();
