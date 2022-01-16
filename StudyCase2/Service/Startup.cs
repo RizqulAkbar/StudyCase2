@@ -49,9 +49,12 @@ namespace Service
             Console.Write("Please insert first \nKafka or Basic : ");
             var type = Console.ReadLine();
 
+            if (type == null)
+                type = "kafka";
+
             if (type == "kafka" || type == "Kafka")
             {
-                // graphql
+                graphql
                 services
                     .AddGraphQLServer()
                     .AddQueryType<QueryKafka>()
@@ -66,7 +69,7 @@ namespace Service
                     .AddQueryType<Query>()
                     .AddMutationType<Mutation>()
                     .AddAuthorization();
-            }
+            // }
 
             services.AddControllers();
             // DI Dependency Injection

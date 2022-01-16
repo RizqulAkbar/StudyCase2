@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twittorapps-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twittorapp
+  template:
+    metadata:
+      labels:
+        app: twittorapp
+    spec:
+      containers:
+      - name: twittorapp
+        image: rizhy/twittorapp:latest
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twittorapps-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: twittorapp
+  ports:
+  - name: twittorapp
+    protocol: TCP
+    port: 80
+    targetPort: 80
